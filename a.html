@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/js/all.min.js"></script>
+    <link rel="stylesheet" href="a.css">
+    
+  </head>
+  <body>
+   <canvas id="cnvs"></canvas>
+   <div class="container">
+	 <div class="loading-container">
+	   <progress value="0" max="100"></progress>
+	 </div>
+   </div>
+   <script type="module">
+
+	 import * as THREE from 'https://threejsfundamentals.org/threejs/resources/threejs/r115/build/three.module.js';
+	 import {OrbitControls} from 'https://threejsfundamentals.org/threejs/resources/threejs/r115/examples/jsm/controls/OrbitControls.js';
+
+	 let planeTextureWasLoaded, cubeTextureWasLoaded, ballTextureWasLoaded, tableTextureWasLoaded;
+	 planeTextureWasLoaded = cubeTextureWasLoaded = ballTextureWasLoaded = tableTextureWasLoaded = false;
+
+	 const mainContainer = document.querySelector('.container');
+	 const progressbar = document.querySelector('progress');
+
+	 function main() {
+	   const canvas = document.querySelector('#cnvs');
+
+	   const renderer = new THREE.WebGLRenderer({canvas, antialias: true});
+	   renderer.shadowMap.enabled = true;
+	   renderer.setPixelRatio(window.devicePixelRatio);
+
+	   const fov = 75;
+	   const aspect = 2;
+	   const near = 0.1;
+	   const far = 75;
+
+	   const camera = new THREE.PerspectiveCamera(fov,aspect,near,far);
+	   camera.position.z = 5;
+	   camera.position.y = 4;
+	   camera.position.x = -5;
+
+	   const scene = new THREE.Scene();
+	   scene.background = new THREE.Color('black');
+
+	   const controls = new OrbitControls(camera, canvas);
+	   controls.target.set(0, 0, 0);
+	   controls.update();
+
+	   const PI = Math.PI;
+
+	   function makePlane(textureURL, planeSize, rotationX, rotationY, rotationZ, x, y, z, castShadow, receiveShadow) {
+		   const planeGeometry = new THREE.PlaneBufferGeometry(planeSize, planeSize, 2, 2);
+
+		   const planeTextureLoader = new THREE.TextureLoader();
+		   planeTextureLoader.load(textureURL, texture => {
+			 const planeMaterial = new THREE.MeshPhongMaterial({
+				 map: texture,
+				 side: THREE.DoubleSide,
+			 });
+
+			 planeTextureWasLoaded = true;
+
+			 texture.magFilter = THREE.LinearMipmapLinearFilter;
+			 texture.anisotrophy = 8;
+			 texture.image.width = texture.image.width * 3;
+			 texture.image.height = texture.image.height * 3;
+
+			 const plane = new THREE.Mesh(planeGeometry, planeMaterial);
+			 plane.rotation.x = rotationX;
+			 plane.rotation.y = rotationY;
+			 plane.rotation.z = rotationZ;
+			 plane.position.x = x;
+			 plane.position.y = y;
+			 plane.position.z = z;
+			 plane.castShadow = castShadow;
+			 plane.receiveShadow = receiveShadow;
+
+			 scene.add(plane);
+
+			 return plane;
+		   });
+	   }
+
+	   makePlane('https://images.unsplash.com/photo-1589066615133-f107789a2f50?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1267&q=80', 15, -PI / 2, null, null, 0, 0, 0, false, true);
+
+	   function makeCube(textureURL, cubeSize, x, y, z, side, castShadow, receiveShadow) {
+		   const cubeGeometry = new THREE.BoxBufferGeometry(cubeSize, cubeSize, cubeSize);
+
+		   const loader = new THREE.TextureLoader();
+		   loader.load(textureURL, texture => {
+			 const cubeMaterial = new THREE.MeshPhongMaterial({
+				 map: texture,
+				 side
+			 });
+
+			 cubeTextureWasLoaded = true;
+
+			 texture.magFilter = THREE.LinearMipmapLinearFilter;
+			 texture.anisotrophy = 8;
+
+			 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+			 cube.castShadow = castShadow;
+			 cube.receiveShadow = receiveShadow;
+			 cube.position.x = x;
+			 cube.position.y = y;
+			 cube.position.z = z;
+
+			 scene.add(cube);
+
+			 return cube;
+		   });
+	   }
+
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0.1, 0.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -2, 0.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 1.9, 0.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 1, 1.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -2.3, 1.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1551554781-c46200ea959d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80', 15, 0, 7.495, 0, THREE.BackSide, true, true);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 4.5, 0.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 4.65, 1.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 4.40, 2.501, -4, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 0.501, -2, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 1.501, -1.8, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 2.501, -1.6, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 3.501, -1.3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 0.501, 1, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 1.501, 0.9, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 2.501, 0.7, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 0.501, 3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 6, 0.501, 6, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -6, 0.501, 5.5, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -6, 0.501, 1.8, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -6, 0.501, -0.2, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -6, 0.501, -2, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -6, 1.501, -1.1, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0, 2.501, 2.9, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0.1, 3.501, 3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0.3, 4.501, 3.3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 1, 2.501, 1.5, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0, 2.501, 1, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -1, 2.501, 1.3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0.6, 3.501, 1.1, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, -0.8, 3.501, 1.7, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0, 0.501, 3, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0, 0.501, -0.5, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0.4, 0.501, -1.6, null, true, false);
+	   makeCube('https://images.unsplash.com/photo-1519972064555-542444e71b54?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80', 1, 0, 1.501, -1.1, null, true, false);
+
+	   function makeSphere(textureURL, x, y, z) {
+		   const sphereRadius = 0.5;
+		   const sphereWidthDevisions = 24;
+		   const sphereHeightDevisions = 24;
+
+		   const sphereGeometry = new THREE.SphereBufferGeometry(sphereRadius, sphereWidthDevisions, sphereHeightDevisions);
+
+		   const sphereTextureLoader = new THREE.TextureLoader();
+		   sphereTextureLoader.load(textureURL, texture => {
+			 const sphereMaterial = new THREE.MeshPhongMaterial({
+				 map: texture,
+			 });
+
+			 ballTextureWasLoaded = true;
+
+			 texture.magFilter = THREE.LinearMipmapLinearFilter;
+			 texture.anisotrophy = 8;
+
+			 const ball = new THREE.Mesh(sphereGeometry, sphereMaterial);
+			 ball.castShadow = true;
+			 ball.receiveShadow = true;
+			 ball.position.x = x;
+			 ball.position.y = y;
+			 ball.position.z = z;
+
+			 scene.add(ball);
+
+			 return ball;
+		   });
+	   }
+
+	   makeSphere('https://images.unsplash.com/photo-1573227897444-860137a0fe74?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1378&q=80', -4.5, 0.5, -3.5);
+	   makeSphere('https://images.unsplash.com/photo-1528459061998-56fd57ad86e3?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=619&q=80', -3, 0.5, -2);
+	   makeSphere('https://images.unsplash.com/photo-1557411732-1797a9171fcf?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=675&q=80', -3, 0.5, 0);
+	   makeSphere('https://images.unsplash.com/photo-1549490316-686f9b5d359f?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80', -3, 0.5, 2);
+	   makeSphere('https://images.unsplash.com/photo-1577574024120-48dde9effcee?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=675&q=80', 3, 0.5, -2);
+	   makeSphere('https://images.unsplash.com/photo-1542407424724-5426773d65a5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=634&q=80', 3, 0.5, 0);
+	   makeSphere('https://images.unsplash.com/photo-1584098115468-0f5307581d31?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80', 3, 0.5, 2);
+
+	   function makeTable(textureURL) {
+		   function makeCylinder(radiusTop, radiusBottom, height, radialSegments, x, y, z) {
+			 const cylinderGeometry = new THREE.CylinderBufferGeometry(radiusTop, radiusBottom, height, radialSegments);
+
+			 const tableTextureLoader = new THREE.TextureLoader();
+			 tableTextureLoader.load(textureURL, texture => {
+				 const cylinderMaterial = new THREE.MeshPhongMaterial({
+				   map: texture,
+				   side: THREE.DoubleSide
+				 });
+
+				 tableTextureWasLoaded = true;
+
+				 texture.magFilter = THREE.LinearMipmapLinearFilter;
+				 texture.anisotrophy = 8;
+
+				 const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+				 cylinder.castShadow = true;
+				 cylinder.position.x = x;
+				 cylinder.position.y = y;
+				 cylinder.position.z = z;
+
+				 scene.add(cylinder);
+
+				 return cylinder;
+			 });
+		   }
+
+		   makeCylinder(2, 2, 0.05, 24, 0, 2, 1.5);
+		   makeCylinder(0.1, 0.1, 2, 24, -1, 1.0, 0.2);
+		   makeCylinder(0.1, 0.1, 2, 24, 1, 1.0, 0.2);
+		   makeCylinder(0.1, 0.1, 2, 24, -1, 1.0, 2.8);
+		   makeCylinder(0.1, 0.1, 2, 24, 1, 1.0, 2.8);
+	   }
+
+	   makeTable('https://images.unsplash.com/photo-1525034687081-c702010cb70d?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=1350&q=80');
+
+	   {
+		   const color = 0xffffff;
+		   const intensity = 1;
+
+		   const light = new THREE.PointLight(color, intensity);
+		   light.castShadow = true;
+		   light.position.set(0, 2.5, -2.5);
+
+		   scene.add(light);
+	   }
+
+	   function changeRendererSizeToDisplaySize(renderer) {
+		   const canvas = renderer.domElement;
+		   const width = canvas.clientWidth;
+		   const height = canvas.clientHeight;
+		   const needResize = canvas.width != width || canvas.height != height;
+		   if (needResize) {
+			 renderer.setSize(width, height, false);
+		   }
+		   return needResize;
+	   }
+
+	   function render() {
+		   const canvas = renderer.domElement;
+		   camera.aspect = canvas.clientWidth / canvas.clientHeight;
+		   camera.updateProjectionMatrix();
+
+		   renderer.render(scene, camera);
+
+		   changeRendererSizeToDisplaySize(renderer);
+
+		   requestAnimationFrame( render );
+	   }
+
+	   render();
+	 }
+
+	 main();
+
+	 progressbar.value += 20;
+
+	 let timer = setInterval(() => {
+	   if (planeTextureWasLoaded || cubeTextureWasLoaded || ballTextureWasLoaded || tableTextureWasLoaded) {
+		   progressbar.value += 15;
+		   planeTextureWasLoaded = cubeTextureWasLoaded = ballTextureWasLoaded = tableTextureWasLoaded = null;
+	   }
+	 }, 0);
+
+	 window.onload = () => {
+	   setTimeout(() => {
+		  progressbar.value = 100;
+	 }, 200);
+	   clearInterval(timer);
+	   setTimeout(() => {
+		   mainContainer.style.display = 'none';
+	   }, 700);
+	 };
+
+   </script>
+  </body>
+</html>
